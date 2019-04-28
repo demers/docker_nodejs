@@ -1,0 +1,13 @@
+version: '2.1'
+
+services:
+  nodejs:
+    build: .
+    image: nodejs
+    container_name: nodejs
+    volumes:
+      - "/home/demers/work:/home/ubuntu/work"
+    #restart: always
+    ports:
+      - "22:22"
+    network_mode: "host"

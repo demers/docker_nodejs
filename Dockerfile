@@ -42,11 +42,13 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 # Standard SSH port
 EXPOSE 22
 
+RUN apt -qy install gcc g++ make
+
 RUN apt install -qy npm
 
 RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
 
-RUN apt apt install npm
+RUN apt -qy install npm
 
 RUN nodejs --version
 
