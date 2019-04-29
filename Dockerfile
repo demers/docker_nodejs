@@ -2,7 +2,7 @@ FROM ubuntu
 
 MAINTAINER FND <fndemers@gmail.com>
 
-ENV PROJECTNAME=SSH
+ENV PROJECTNAME=NODEJS
 
 ENV WORKDIRECTORY=/home/ubuntu
 
@@ -39,8 +39,13 @@ RUN echo "export PS1=\"\\e[0;31m $PROJECTNAME\\e[m \$PS1\"" >> ${WORKDIRECTORY}/
 ENV TZ=America/Toronto
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
+
 # Standard SSH port
 EXPOSE 22
+
+# Installation X11.
+RUN apt install -y xauth vim-gtk
+
 
 RUN apt -qy install gcc g++ make
 
@@ -52,10 +57,17 @@ RUN apt -qy install npm
 
 RUN nodejs --version
 
-RUN echo "export NVM_DIR=\"$HOME/.nvm\"" >> ${WORKDIRECTORY}/.bashrc
-RUN echo "[ -s \"$NVM_DIR/nvm.sh\" ] && \. \"$NVM_DIR/nvm.sh\"" >> ${WORKDIRECTORY}/.bashrc
-RUN echo "[ -s \"$NVM_DIR/bash_completion\" ] && \. \"$NVM_DIR/bash_completion\"" >> ${WORKDIRECTORY}/.bashrc
+RUN echo "export NVM_DIR=\"\$HOME/.nvm\"" >> ${WORKDIRECTORY}/.bashrc
+RUN echo "[ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\"" >> ${WORKDIRECTORY}/.bashrc
+RUN echo "[ -s \"\$NVM_DIR/bash_completion\" ] && \. \"\$NVM_DIR/bash_completion\"" >> ${WORKDIRECTORY}/.bashrc
 RUN echo "echo To install Node, type nvm install node" >> ${WORKDIRECTORY}/.bashrc
+
+RUN cd ${WORKDIRECTORY} \
+    && mkdir work \
+    && chown -R $USERNAME:$PASSWORD work .bash_profile .bashrc
+
+WORKDIR ${WORKDIRECTORY}
+
 
 # Start SSHD server...
 CMD ["/usr/sbin/sshd", "-D"]
