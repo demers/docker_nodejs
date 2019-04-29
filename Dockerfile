@@ -12,6 +12,8 @@ ENV PASSWORD=ubuntu
 
 RUN apt-get update
 
+RUN apt-get install -y vim-nox curl git exuberant-ctags
+
 # Install a basic SSH server
 RUN apt install -y openssh-server
 RUN sed -i 's|session    required     pam_loginuid.so|session    optional     pam_loginuid.so|g' /etc/pam.d/sshd
@@ -46,6 +48,26 @@ EXPOSE 22
 # Installation X11.
 RUN apt install -y xauth vim-gtk
 
+RUN cd ${WORKDIRECTORY} \
+    && git clone git://github.com/zaiste/vimified.git \
+    && ln -sfn vimified/ ${WORKDIRECTORY}/.vim \
+    && ln -sfn vimified/vimrc ${WORKDIRECTORY}/.vimrc \
+    && cd vimified \
+    && mkdir bundle \
+    && mkdir -p tmp/backup tmp/swap tmp/undo \
+    && git clone https://github.com/gmarik/vundle.git bundle/vundle \
+    && echo "let g:vimified_packages = ['general', 'coding', 'fancy', 'indent', 'css', 'os', 'ruby', 'js', 'haskell', 'python', 'color']" > local.vimrc
+
+COPY after.vimrc ${WORKDIRECTORY}/vimified/
+
+COPY extra.vimrc ${WORKDIRECTORY}/vimified
+
+RUN cd ${WORKDIRECTORY} \
+    && ln -s vimified .vim \
+    && ln -s vimified/vimrc .vimrc
+
+RUN echo "vim +BundleInstall +qall" >> ${WORKDIRECTORY}/.bash_profile
+
 
 RUN apt -qy install gcc g++ make
 
@@ -57,16 +79,14 @@ RUN apt -qy install npm
 
 RUN nodejs --version
 
-RUN echo "export NVM_DIR=\"\$HOME/.nvm\"" >> ${WORKDIRECTORY}/.bashrc
-RUN echo "[ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\"" >> ${WORKDIRECTORY}/.bashrc
-RUN echo "[ -s \"\$NVM_DIR/bash_completion\" ] && \. \"\$NVM_DIR/bash_completion\"" >> ${WORKDIRECTORY}/.bashrc
-RUN echo "echo To install Node, type nvm install node" >> ${WORKDIRECTORY}/.bashrc
+RUN echo "export NVM_DIR=\"\$HOME/.nvm\"" >> ${WORKDIRECTORY}/.bash_profile
+RUN echo "[ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\"" >> ${WORKDIRECTORY}/.bash_profile
+RUN echo "[ -s \"\$NVM_DIR/bash_completion\" ] && \. \"\$NVM_DIR/bash_completion\"" >> ${WORKDIRECTORY}/.bash_profile
+RUN echo "echo To install Node, type nvm install node" >> ${WORKDIRECTORY}/.bash_profile
 
 RUN cd ${WORKDIRECTORY} \
     && mkdir work \
-    && chown -R $USERNAME:$PASSWORD work .bash_profile .bashrc
-
-WORKDIR ${WORKDIRECTORY}
+&& chown -R $USERNAME:$PASSWORD work vimified .vim .vimrc .bash_profile
 
 
 # Start SSHD server...
