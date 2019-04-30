@@ -1,8 +1,15 @@
-FROM ubuntu
+FROM ubuntu:18.04
 
 MAINTAINER FND <fndemers@gmail.com>
 
+ENV TERM=xterm\
+    TZ=America/Toronto\
+    DEBIAN_FRONTEND=noninteractive
+
 ENV PROJECTNAME=NODEJS
+
+ENV NVM_VERSION v0.33.11
+
 
 ENV WORKDIRECTORY=/home/ubuntu
 
@@ -30,16 +37,17 @@ RUN echo "$USERNAME:$PASSWORD" | chpasswd
 
 RUN apt-get clean && apt-get -y update && apt-get install -y locales && locale-gen fr_CA.UTF-8
 ENV TZ=America/Toronto
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+#RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+#RUN /usr/bin/timedatectl set-timezone $TZ
+RUN unlink /etc/localtime
+RUN ln -s /usr/share/zoneinfo/$TZ /etc/localtime
+
 
 RUN apt install -y fish
 
 RUN echo "export PS1=\"\\e[0;31m $PROJECTNAME\\e[m \$PS1\"" >> ${WORKDIRECTORY}/.bash_profile
 
 # Install all you want here...
-
-ENV TZ=America/Toronto
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 
 # Standard SSH port
@@ -62,10 +70,6 @@ COPY after.vimrc ${WORKDIRECTORY}/vimified/
 
 COPY extra.vimrc ${WORKDIRECTORY}/vimified
 
-RUN cd ${WORKDIRECTORY} \
-    && ln -s vimified .vim \
-    && ln -s vimified/vimrc .vimrc
-
 RUN echo "vim +BundleInstall +qall" >> ${WORKDIRECTORY}/.bash_profile
 
 
@@ -73,16 +77,27 @@ RUN apt -qy install gcc g++ make
 
 RUN apt install -qy npm
 
-RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
+# Replace shell with bash so we can source files
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
-RUN apt -qy install npm
+# Install NVM
+RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/${NVM_VERSION}/install.sh | bash
 
-RUN nodejs --version
 
-RUN echo "export NVM_DIR=\"\$HOME/.nvm\"" >> ${WORKDIRECTORY}/.bash_profile
-RUN echo "[ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\"" >> ${WORKDIRECTORY}/.bash_profile
-RUN echo "[ -s \"\$NVM_DIR/bash_completion\" ] && \. \"\$NVM_DIR/bash_completion\"" >> ${WORKDIRECTORY}/.bash_profile
-RUN echo "echo To install Node, type nvm install node" >> ${WORKDIRECTORY}/.bash_profile
+#RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
+
+# Install NODE
+RUN source /root/.nvm/nvm.sh; \
+    nvm install --lts
+
+#ENV NODE_VERSION v8.10.0
+#RUN source ~/.nvm/nvm.sh; \
+    #nvm install $NODE_VERSION; \
+    #nvm use --delete-prefix $NODE_VERSION;
+
+RUN whereis nvm
+
+RUN node --version
 
 RUN cd ${WORKDIRECTORY} \
     && mkdir work \
