@@ -20,5 +20,9 @@ Plugin 'Shougo/vimfiler.vim'
 
 Plugin 'mdempsky/gocode', {'rtp': 'vim/'}
 
+Plugin 'chrisbra/NrrwRgn'
+
+Plugin 'w0rp/ale'
+
 "call vundle#end()
 "Pour redémarrer: vim +BundleInstall +qall
