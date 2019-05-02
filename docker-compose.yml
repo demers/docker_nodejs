@@ -6,8 +6,12 @@ services:
     image: nodejs
     container_name: nodejs
     volumes:
-      - "/home/demers/work:/home/ubuntu/work"
+      - "data_work:/home/ubuntu/work"
+      - "/home/demers/share:/home/ubuntu/share"
     #restart: always
     ports:
       - "22:22"
     network_mode: "host"
+
+volumes:
+  data_work:

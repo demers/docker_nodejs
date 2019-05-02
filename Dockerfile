@@ -56,6 +56,8 @@ EXPOSE 22
 # Installation X11.
 RUN apt install -y xauth vim-gtk
 
+RUN apt-get install -y build-essential cmake python3-dev
+
 RUN cd ${WORKDIRECTORY} \
     && git clone git://github.com/zaiste/vimified.git \
     && ln -sfn vimified/ ${WORKDIRECTORY}/.vim \
@@ -70,8 +72,22 @@ COPY after.vimrc ${WORKDIRECTORY}/vimified/
 
 COPY extra.vimrc ${WORKDIRECTORY}/vimified
 
-RUN echo "vim +BundleInstall +qall" >> ${WORKDIRECTORY}/.bash_profile
+# Générer les tags de ctags.
+RUN echo "ctags -f ${WORKDIRECTORY}/mytags -R ${WORKDIRECTORY}" >> ${WORKDIRECTORY}/.bash_profile
 
+#if ! [ -f /run/user/$UID/runonce_myscript ]; then
+    #touch /run/user/$UID/runonce_myscript
+    #/path/to/myscript
+#fi
+
+# Compiling YouCompleteMe only once...
+RUN echo "if ! [ -f ~/.runonce_install ]; then" >> ${WORKDIRECTORY}/.bash_profile
+RUN echo "touch ~/.runonce_install" >> ${WORKDIRECTORY}/.bash_profile
+RUN echo "vim +BundleInstall +qall" >> ${WORKDIRECTORY}/.bash_profile
+RUN echo "cd ~/.vim/bundle/YouCompleteMe" >> ${WORKDIRECTORY}/.bash_profile
+RUN echo "./install.py --clang-completer" >> ${WORKDIRECTORY}/.bash_profile
+RUN echo "fi" >> ${WORKDIRECTORY}/.bash_profile
+RUN echo "cd ~/" >> ${WORKDIRECTORY}/.bash_profile
 
 RUN apt -qy install gcc g++ make
 
@@ -101,7 +117,7 @@ RUN node --version
 
 RUN cd ${WORKDIRECTORY} \
     && mkdir work \
-&& chown -R $USERNAME:$PASSWORD work vimified .vim .vimrc .bash_profile
+&& chown -R $USERNAME:$PASSWORD work vimified .vim .vimrc .bash_profile mytags
 
 
 # Start SSHD server...
