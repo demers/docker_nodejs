@@ -117,7 +117,7 @@ RUN node --version
 
 RUN cd ${WORKDIRECTORY} \
     && mkdir work \
-&& chown -R $USERNAME:$PASSWORD work vimified .vim .vimrc .bash_profile mytags
+&& chown -R $USERNAME:$PASSWORD work vimified .vim .vimrc .bash_profile
 
 
 # Start SSHD server...
