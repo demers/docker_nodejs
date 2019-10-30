@@ -47,6 +47,10 @@ RUN apt install -y fish
 
 RUN echo "export PS1=\"\\e[0;31m $PROJECTNAME\\e[m \$PS1\"" >> ${WORKDIRECTORY}/.bash_profile
 
+# Ajout des droits sudoers
+RUN apt-get install -y sudo
+RUN echo "%ubuntu ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
 # Install all you want here...
 
 
@@ -57,6 +61,8 @@ EXPOSE 22
 RUN apt install -y xauth vim-gtk
 
 RUN apt-get install -y build-essential cmake python3-dev
+
+WORKDIR ${WORKDIRECTORY}
 
 RUN cd ${WORKDIRECTORY} \
     && git clone git://github.com/zaiste/vimified.git \
