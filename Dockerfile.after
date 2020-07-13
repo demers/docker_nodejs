@@ -1,0 +1,25 @@
+
+RUN apt update
+RUN apt install -qy npm
+
+# Replace shell with bash so we can source files
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+
+# Install NVM
+#RUN curl -sL https://deb.nodesource.com/setup_12.x | bash
+RUN curl -sL https://deb.nodesource.com/setup_14.x | bash
+#RUN apt install -y nodejs
+
+ENV NVM_VERSION v0.35.3
+
+# Install NVM
+RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/${NVM_VERSION}/install.sh | bash
+
+
+# Install NODE
+RUN source /root/.nvm/nvm.sh; \
+    nvm install --lts
+
+RUN echo "source /root/.nvm/nvm.sh" >> ${WORKDIRECTORY}/.bash_profile
+
+RUN node --version
